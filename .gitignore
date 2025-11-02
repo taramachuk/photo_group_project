@@ -34,3 +34,4 @@ build/
 
 ### MY ###
 .env
+pom.xml

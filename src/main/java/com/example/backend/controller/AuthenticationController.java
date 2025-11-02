@@ -23,8 +23,8 @@ public class AuthenticationController {
 
     @PostMapping("/signup")
     public ResponseEntity<User> register(@RequestBody RegisterUserDto registerUserDto) {
-        User reistredUser = authenticationService.signup(registerUserDto);
-        return ResponseEntity.ok(reistredUser);
+        User registeredUser = authenticationService.signup(registerUserDto);
+        return ResponseEntity.ok(registeredUser);
     }
 
     @PostMapping("/login")
@@ -38,8 +38,8 @@ public class AuthenticationController {
     @PostMapping("/verify")
     public ResponseEntity<?> verifyUser(@RequestBody VerifyUserDto verifyUserDto) {
         try {
-            authenticationService.verityUser(verifyUserDto);
-            return ResponseEntity.ok("Account verifyed successfully");
+            authenticationService.verifyUser(verifyUserDto);
+            return ResponseEntity.ok("Account verified successfully");
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

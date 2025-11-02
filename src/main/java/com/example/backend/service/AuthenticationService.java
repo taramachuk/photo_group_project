@@ -26,13 +26,13 @@ public class AuthenticationService {
 
     public AuthenticationService(
             UserRepository userRepository,
-            PasswordEncoder passwordEncoder,
             AuthenticationManager authenticationManager,
+            PasswordEncoder passwordEncoder,
             EmailService emailService
     ) {
+        this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
-        this.authenticationManager = authenticationManager;
         this.emailService = emailService;
     }
 
@@ -40,19 +40,18 @@ public class AuthenticationService {
         User user = new User(input.getUsername(), input.getEmail(), passwordEncoder.encode(input.getPassword()));
         user.setVerificationCode(generateVerificationCode());
         user.setVerificationCodeExpiresAt(LocalDateTime.now().plusMinutes(15));
-        user.setEnabled(true);
+        user.setEnabled(false);
         sendVerificationEmail(user);
         return userRepository.save(user);
     }
 
     public User authenticate(LoginUserDto input) {
         User user = userRepository.findByEmail(input.getEmail())
-                .orElseThrow(() -> new UsernameNotFoundException(input.getEmail())); // TODO: May be a problem
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         if (!user.isEnabled()) {
-            throw new RuntimeException("User is not enabled");
+            throw new RuntimeException("Account not verified. Please verify your account.");
         }
-
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         input.getEmail(),
@@ -63,7 +62,7 @@ public class AuthenticationService {
         return user;
     }
 
-    public void verityUser(VerifyUserDto input) {
+    public void verifyUser(VerifyUserDto input) {
         Optional<User> optionalUser = userRepository.findByEmail(input.getEmail());
         if(optionalUser.isPresent()) {
             User user = optionalUser.get();
@@ -88,7 +87,7 @@ public class AuthenticationService {
         if(optionalUser.isPresent()) {
             User user = optionalUser.get();
             if (user.isEnabled()) {
-                throw new RuntimeException("User is already verified");
+                throw new RuntimeException("Account is already verified");
             }
             user.setVerificationCode(generateVerificationCode());
             user.setVerificationCodeExpiresAt(LocalDateTime.now().plusHours(1));
@@ -99,9 +98,9 @@ public class AuthenticationService {
         }
     }
 
-    public void sendVerificationEmail(User user) {
+    private void sendVerificationEmail(User user) { //TODO: Update with company logo
         String subject = "Account Verification";
-        String verificationCode = user.getVerificationCode();
+        String verificationCode = "VERIFICATION CODE " + user.getVerificationCode();
         String htmlMessage = "<html>"
                 + "<body style=\"font-family: Arial, sans-serif;\">"
                 + "<div style=\"background-color: #f5f5f5; padding: 20px;\">"
@@ -118,10 +117,10 @@ public class AuthenticationService {
         try {
             emailService.sendVerificationEmail(user.getEmail(), subject, htmlMessage);
         } catch (MessagingException e) {
+            // Handle email sending exception
             e.printStackTrace();
         }
     }
-
     private String generateVerificationCode() {
         Random random = new Random();
         int code = random.nextInt(900000) + 100000;

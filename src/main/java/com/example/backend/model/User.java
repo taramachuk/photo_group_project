@@ -37,7 +37,7 @@ public class User implements UserDetails {
     private LocalDateTime verificationCodeExpiresAt;
 
 
-    public User(String username, String password, String email) {
+    public User(String username, String email, String password) {
         this.username = username;
         this.password = password;
         this.email = email;
@@ -69,16 +69,5 @@ public class User implements UserDetails {
     @Override
     public boolean isEnabled() {
         return enabled;
-    }
-
-    @Override
-    public String getUsername() {
-        return username;
-    }
-
-
-    @Override
-    public String getPassword() {
-        return password;
     }
 }
