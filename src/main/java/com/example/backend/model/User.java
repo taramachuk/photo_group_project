@@ -15,6 +15,7 @@ import java.util.List;
 @Getter
 @Setter
 public class User implements UserDetails {
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
@@ -36,15 +37,13 @@ public class User implements UserDetails {
     @Column(name = "verification_expiration")
     private LocalDateTime verificationCodeExpiresAt;
 
-
     public User(String username, String email, String password) {
         this.username = username;
         this.password = password;
         this.email = email;
     }
 
-    public User() {
-    }
+    public User() { }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -70,4 +69,7 @@ public class User implements UserDetails {
     public boolean isEnabled() {
         return enabled;
     }
+
+    @Override
+    public String getUsername() { return email; }
 }
