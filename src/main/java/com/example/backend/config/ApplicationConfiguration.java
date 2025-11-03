@@ -1,6 +1,5 @@
 package com.example.backend.config;
 
-
 import com.example.backend.repository.UserRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
