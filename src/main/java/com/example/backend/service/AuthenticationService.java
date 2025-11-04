@@ -3,6 +3,7 @@ package com.example.backend.service;
 import com.example.backend.dto.LoginUserDto;
 import com.example.backend.dto.RegisterUserDto;
 import com.example.backend.dto.VerifyUserDto;
+import com.example.backend.exception.EmailAlreadyUsedException;
 import com.example.backend.model.User;
 import com.example.backend.repository.UserRepository;
 import jakarta.mail.MessagingException;
@@ -36,6 +37,9 @@ public class AuthenticationService {
     }
 
     public User signup(RegisterUserDto input) {
+        if(userRepository.existsByEmail(input.getEmail())) {
+            throw new EmailAlreadyUsedException("Email already in use: " + input.getEmail());
+        }
         User user = new User(input.getUsername(), input.getEmail(), passwordEncoder.encode(input.getPassword()));
         user.setVerificationCode(generateVerificationCode());
         user.setVerificationCodeExpiresAt(LocalDateTime.now().plusMinutes(15));
