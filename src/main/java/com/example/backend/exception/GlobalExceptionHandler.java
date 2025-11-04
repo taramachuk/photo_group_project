@@ -19,6 +19,11 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(HttpStatus.CONFLICT, ex.getMessage(), req.getRequestURI());
     }
 
+    @ExceptionHandler(InvalidLoginException.class)
+    public ResponseEntity<ApiError> handleInvalidLoginException(InvalidLoginException ex, HttpServletRequest req) {
+        return buildErrorResponse(HttpStatus.UNAUTHORIZED, ex.getMessage(), req.getRequestURI());
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> handleGeneric(Exception ex, HttpServletRequest req) {
         return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected error: " + ex.getMessage(), req.getRequestURI());

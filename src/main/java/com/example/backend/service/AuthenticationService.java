@@ -4,11 +4,13 @@ import com.example.backend.dto.LoginUserDto;
 import com.example.backend.dto.RegisterUserDto;
 import com.example.backend.dto.VerifyUserDto;
 import com.example.backend.exception.EmailAlreadyUsedException;
+import com.example.backend.exception.InvalidLoginException;
 import com.example.backend.model.User;
 import com.example.backend.repository.UserRepository;
 import jakarta.mail.MessagingException;
 import org.springframework.security.authentication.AuthenticationManager;
 
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -50,17 +52,23 @@ public class AuthenticationService {
 
     public User authenticate(LoginUserDto input) {
         User user = userRepository.findByEmail(input.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new InvalidLoginException("Invalid email or password"));
+
 
         if (!user.isEnabled()) {
             throw new RuntimeException("Account not verified. Please verify your account.");
         }
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        input.getEmail(),
-                        input.getPassword()
-                )
-        );
+
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            input.getEmail(),
+                            input.getPassword()
+                    )
+            );
+        } catch (Exception e) {
+            throw new InvalidLoginException("Invalid email or password");
+        }
 
         return user;
     }
