@@ -1,8 +1,14 @@
 package com.example.backend.controller;
 
+import com.example.backend.dto.CreateSpotDto;
 import com.example.backend.model.Spot;
+import com.example.backend.model.User;
 import com.example.backend.service.SpotService;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -86,6 +92,15 @@ public class SpotController {
     ) {
         List<Spot> spots = spotService.searchByTagNameAndTitle(tagName, title);
         return ResponseEntity.ok(spots);
+    }
+
+    @PostMapping
+    public ResponseEntity<Spot> createSpot(@Valid @RequestBody CreateSpotDto dto) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) authentication.getPrincipal();
+
+        Spot createdSpot = spotService.createSpot(dto, currentUser);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdSpot);
     }
 }
 
