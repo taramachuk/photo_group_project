@@ -56,7 +56,7 @@ public class SpotController {
         return ResponseEntity.ok(spotMapper.toDtoList(spots));
     }
 
-    @GetMapping("/map/search/title")
+    @GetMapping("/map/search/tag")
     public ResponseEntity<List<SpotDto>> searchSpotsInMapAreaByTag(
             @RequestParam BigDecimal minLat,
             @RequestParam BigDecimal maxLat,
