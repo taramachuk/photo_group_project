@@ -27,13 +27,13 @@ public class SpotController {
         this.spotMapper = spotMapper;
     }
 
-    @GetMapping("/search")
+    @GetMapping("/search/title")
     public ResponseEntity<List<SpotDto>> searchByTitle(@RequestParam String title) {
         List<Spot> spots = spotService.searchByTitle(title);
         return ResponseEntity.ok(spotMapper.toDtoList(spots));
     }
 
-    @GetMapping("/map")
+    @GetMapping("/map/search")
     public ResponseEntity<List<SpotDto>> getSpotsInMapArea(
             @RequestParam BigDecimal minLat,
             @RequestParam BigDecimal maxLat,
@@ -44,7 +44,7 @@ public class SpotController {
         return ResponseEntity.ok(spotMapper.toDtoList(spots));
     }
 
-    @GetMapping("/map/search")
+    @GetMapping("/map/search/title")
     public ResponseEntity<List<SpotDto>> searchSpotsInMapAreaByTitle(
             @RequestParam BigDecimal minLat,
             @RequestParam BigDecimal maxLat,
@@ -56,7 +56,7 @@ public class SpotController {
         return ResponseEntity.ok(spotMapper.toDtoList(spots));
     }
 
-    @GetMapping("/map/tag")
+    @GetMapping("/map/search/title")
     public ResponseEntity<List<SpotDto>> searchSpotsInMapAreaByTag(
             @RequestParam BigDecimal minLat,
             @RequestParam BigDecimal maxLat,
