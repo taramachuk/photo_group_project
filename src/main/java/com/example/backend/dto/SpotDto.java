@@ -20,7 +20,7 @@ public class SpotDto {
     private BigDecimal longitude;
     private LocalDateTime createdAt;
     private Integer categoryId;
-    private UserDto author;
+    private AuthorDto author;
     private AddressDto address;
 }
 

@@ -1,8 +1,8 @@
 package com.example.backend.mapper;
 
 import com.example.backend.dto.AddressDto;
+import com.example.backend.dto.AuthorDto;
 import com.example.backend.dto.SpotDto;
-import com.example.backend.dto.UserDto;
 import com.example.backend.model.Address;
 import com.example.backend.model.Spot;
 import com.example.backend.model.User;
@@ -27,7 +27,7 @@ public class SpotMapper {
                 .longitude(spot.getLongitude())
                 .createdAt(spot.getCreatedAt())
                 .categoryId(spot.getCategoryId())
-                .author(toUserDto(spot.getAuthor()))
+                .author(toAuthorDto(spot.getAuthor()))
                 .address(toAddressDto(spot.getAddress()))
                 .build();
     }
@@ -41,15 +41,14 @@ public class SpotMapper {
                 .collect(Collectors.toList());
     }
 
-    private UserDto toUserDto(User user) {
+  
+    private AuthorDto toAuthorDto(User user) {
         if (user == null) {
             return null;
         }
 
-        return UserDto.builder()
+        return AuthorDto.builder()
                 .id(user.getId())
-                .username(user.getUsername())
-                .email(user.getEmail())
                 .displayName(user.getDisplayName())
                 .avatarUrl(user.getAvatarUrl())
                 .bio(user.getBio())
