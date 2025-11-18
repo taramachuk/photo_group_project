@@ -38,21 +38,36 @@ public class SpotService {
         this.spotTagRepository = spotTagRepository;
     }
 
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public List<Spot> searchByTitle(String title) {
-        return spotRepository.findByTitleContainingIgnoreCase(title);
+        List<Spot> spots = spotRepository.findByTitleContainingIgnoreCase(title);
+        
+        spots.forEach(spot -> {
+            if (spot.getAuthor() != null) spot.getAuthor().getEmail();
+            if (spot.getAddress() != null) spot.getAddress().getName();
+        });
+        return spots;
     }
 
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public List<Spot> getSpotsInMapArea(
             BigDecimal minLatitude,
             BigDecimal maxLatitude,
             BigDecimal minLongitude,
             BigDecimal maxLongitude
     ) {
-        return spotRepository.findByLatitudeBetweenAndLongitudeBetween(
+        List<Spot> spots = spotRepository.findByLatitudeBetweenAndLongitudeBetween(
                 minLatitude, maxLatitude, minLongitude, maxLongitude
         );
+        
+        spots.forEach(spot -> {
+            if (spot.getAuthor() != null) spot.getAuthor().getEmail();
+            if (spot.getAddress() != null) spot.getAddress().getName();
+        });
+        return spots;
     }
 
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public List<Spot> searchSpotsInMapAreaByTitle(
             BigDecimal minLatitude,
             BigDecimal maxLatitude,
@@ -60,11 +75,18 @@ public class SpotService {
             BigDecimal maxLongitude,
             String title
     ) {
-        return spotRepository.findByLatitudeBetweenAndLongitudeBetweenAndTitleContainingIgnoreCase(
+        List<Spot> spots = spotRepository.findByLatitudeBetweenAndLongitudeBetweenAndTitleContainingIgnoreCase(
                 minLatitude, maxLatitude, minLongitude, maxLongitude, title
         );
+        
+        spots.forEach(spot -> {
+            if (spot.getAuthor() != null) spot.getAuthor().getEmail();
+            if (spot.getAddress() != null) spot.getAddress().getName();
+        });
+        return spots;
     }
 
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public List<Spot> searchSpotsInMapAreaByTag(
             BigDecimal minLatitude,
             BigDecimal maxLatitude,
@@ -72,11 +94,17 @@ public class SpotService {
             BigDecimal maxLongitude,
             String tagName
     ) {
-        return spotRepository.findSpotsInAreaByTag(
+        List<Spot> spots = spotRepository.findSpotsInAreaByTag(
                 minLatitude, maxLatitude, minLongitude, maxLongitude, tagName
         );
+        spots.forEach(spot -> {
+            if (spot.getAuthor() != null) spot.getAuthor().getEmail();
+            if (spot.getAddress() != null) spot.getAddress().getName();
+        });
+        return spots;
     }
 
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public List<Spot> searchSpotsInMapAreaByTagAndTitle(
             BigDecimal minLatitude,
             BigDecimal maxLatitude,
@@ -85,17 +113,35 @@ public class SpotService {
             String tagName,
             String title
     ) {
-        return spotRepository.findSpotsInAreaByTagAndTitle(
+        List<Spot> spots = spotRepository.findSpotsInAreaByTagAndTitle(
                 minLatitude, maxLatitude, minLongitude, maxLongitude, tagName, title
         );
+        spots.forEach(spot -> {
+            if (spot.getAuthor() != null) spot.getAuthor().getEmail();
+            if (spot.getAddress() != null) spot.getAddress().getName();
+        });
+        return spots;
     }
 
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public List<Spot> searchByTagName(String tagName) {
-        return spotRepository.findByTagName(tagName);
+        List<Spot> spots = spotRepository.findByTagName(tagName);
+        spots.forEach(spot -> {
+            if (spot.getAuthor() != null) spot.getAuthor().getEmail();
+            if (spot.getAddress() != null) spot.getAddress().getName();
+        });
+        return spots;
     }
 
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public List<Spot> searchByTagNameAndTitle(String tagName, String title) {
-        return spotRepository.findByTagNameAndTitleContainingIgnoreCase(tagName, title);
+        List<Spot> spots = spotRepository.findByTagNameAndTitleContainingIgnoreCase(tagName, title);
+       
+        spots.forEach(spot -> {
+            if (spot.getAuthor() != null) spot.getAuthor().getEmail();
+            if (spot.getAddress() != null) spot.getAddress().getName();
+        });
+        return spots;
     }
 
     @Transactional

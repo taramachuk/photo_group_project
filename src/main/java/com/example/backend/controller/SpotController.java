@@ -1,6 +1,8 @@
 package com.example.backend.controller;
 
 import com.example.backend.dto.CreateSpotDto;
+import com.example.backend.dto.SpotDto;
+import com.example.backend.mapper.SpotMapper;
 import com.example.backend.model.Spot;
 import com.example.backend.model.User;
 import com.example.backend.service.SpotService;
@@ -18,30 +20,32 @@ import java.util.List;
 @RestController
 public class SpotController {
     private final SpotService spotService;
+    private final SpotMapper spotMapper;
 
-    public SpotController(SpotService spotService) {
+    public SpotController(SpotService spotService, SpotMapper spotMapper) {
         this.spotService = spotService;
+        this.spotMapper = spotMapper;
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<Spot>> searchByTitle(@RequestParam String title) {
+    public ResponseEntity<List<SpotDto>> searchByTitle(@RequestParam String title) {
         List<Spot> spots = spotService.searchByTitle(title);
-        return ResponseEntity.ok(spots);
+        return ResponseEntity.ok(spotMapper.toDtoList(spots));
     }
 
     @GetMapping("/map")
-    public ResponseEntity<List<Spot>> getSpotsInMapArea(
+    public ResponseEntity<List<SpotDto>> getSpotsInMapArea(
             @RequestParam BigDecimal minLat,
             @RequestParam BigDecimal maxLat,
             @RequestParam BigDecimal minLng,
             @RequestParam BigDecimal maxLng
     ) {
         List<Spot> spots = spotService.getSpotsInMapArea(minLat, maxLat, minLng, maxLng);
-        return ResponseEntity.ok(spots);
+        return ResponseEntity.ok(spotMapper.toDtoList(spots));
     }
 
     @GetMapping("/map/search")
-    public ResponseEntity<List<Spot>> searchSpotsInMapAreaByTitle(
+    public ResponseEntity<List<SpotDto>> searchSpotsInMapAreaByTitle(
             @RequestParam BigDecimal minLat,
             @RequestParam BigDecimal maxLat,
             @RequestParam BigDecimal minLng,
@@ -49,11 +53,11 @@ public class SpotController {
             @RequestParam String title
     ) {
         List<Spot> spots = spotService.searchSpotsInMapAreaByTitle(minLat, maxLat, minLng, maxLng, title);
-        return ResponseEntity.ok(spots);
+        return ResponseEntity.ok(spotMapper.toDtoList(spots));
     }
 
     @GetMapping("/map/tag")
-    public ResponseEntity<List<Spot>> searchSpotsInMapAreaByTag(
+    public ResponseEntity<List<SpotDto>> searchSpotsInMapAreaByTag(
             @RequestParam BigDecimal minLat,
             @RequestParam BigDecimal maxLat,
             @RequestParam BigDecimal minLng,
@@ -61,11 +65,11 @@ public class SpotController {
             @RequestParam String tagName
     ) {
         List<Spot> spots = spotService.searchSpotsInMapAreaByTag(minLat, maxLat, minLng, maxLng, tagName);
-        return ResponseEntity.ok(spots);
+        return ResponseEntity.ok(spotMapper.toDtoList(spots));
     }
 
     @GetMapping("/map/search/advanced")
-    public ResponseEntity<List<Spot>> searchSpotsInMapAreaByTagAndTitle(
+    public ResponseEntity<List<SpotDto>> searchSpotsInMapAreaByTagAndTitle(
             @RequestParam BigDecimal minLat,
             @RequestParam BigDecimal maxLat,
             @RequestParam BigDecimal minLng,
@@ -76,31 +80,31 @@ public class SpotController {
         List<Spot> spots = spotService.searchSpotsInMapAreaByTagAndTitle(
                 minLat, maxLat, minLng, maxLng, tagName, title
         );
-        return ResponseEntity.ok(spots);
+        return ResponseEntity.ok(spotMapper.toDtoList(spots));
     }
 
     @GetMapping("/tag")
-    public ResponseEntity<List<Spot>> searchByTagName(@RequestParam String tagName) {
+    public ResponseEntity<List<SpotDto>> searchByTagName(@RequestParam String tagName) {
         List<Spot> spots = spotService.searchByTagName(tagName);
-        return ResponseEntity.ok(spots);
+        return ResponseEntity.ok(spotMapper.toDtoList(spots));
     }
 
     @GetMapping("/tag/search")
-    public ResponseEntity<List<Spot>> searchByTagNameAndTitle(
+    public ResponseEntity<List<SpotDto>> searchByTagNameAndTitle(
             @RequestParam String tagName,
             @RequestParam String title
     ) {
         List<Spot> spots = spotService.searchByTagNameAndTitle(tagName, title);
-        return ResponseEntity.ok(spots);
+        return ResponseEntity.ok(spotMapper.toDtoList(spots));
     }
 
     @PostMapping
-    public ResponseEntity<Spot> createSpot(@Valid @RequestBody CreateSpotDto dto) {
+    public ResponseEntity<SpotDto> createSpot(@Valid @RequestBody CreateSpotDto dto) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
 
         Spot createdSpot = spotService.createSpot(dto, currentUser);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdSpot);
+        return ResponseEntity.status(HttpStatus.CREATED).body(spotMapper.toDto(createdSpot));
     }
 }
 
