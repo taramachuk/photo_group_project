@@ -209,6 +209,20 @@ class AuthenticationServiceTest {
         assertEquals("User not found", exception.getMessage());
     }
 
+    @Test
+    void resendVerificationCode_ShouldThrowException_WhenUserAlreadyVerified() {
+        String email = "aktywny@test.pl";
+        User user = new User();
+        user.setEnabled(true);
 
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            authenticationService.resendVerificationCode(email);
+        });
+
+        assertEquals("Account is already verified", exception.getMessage());
+        verify(emailService, never()).sendVerificationEmail(any(), any(), any());
+    }
 
 }
