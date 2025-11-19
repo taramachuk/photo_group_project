@@ -1,0 +1,76 @@
+package com.example.backend.service;
+
+import com.example.backend.dto.RegisterUserDto;
+import com.example.backend.exception.EmailAlreadyUsedException;
+import com.example.backend.model.User;
+import com.example.backend.repository.UserRepository;
+import jakarta.mail.MessagingException;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+class AuthenticationServiceTest {
+
+    @Mock
+    private UserRepository userRepository;
+
+    @Mock
+    private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private AuthenticationManager authenticationManager;
+
+    @Mock
+    private EmailService emailService;
+
+    @InjectMocks
+    private AuthenticationService authenticationService;
+
+    @Test
+    void signup_ShouldRegisterUser_WhenEmailIsUnique() throws MessagingException {
+        RegisterUserDto inputDto = new RegisterUserDto();
+        inputDto.setEmail("nowy@test.pl");
+        inputDto.setPassword("haslo123");
+        inputDto.setUsername("NowyUser");
+
+        when(userRepository.existsByEmail(inputDto.getEmail())).thenReturn(false);
+
+        when(passwordEncoder.encode(inputDto.getPassword())).thenReturn("zakodowane_haslo_xyz");
+
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        User result = authenticationService.signup(inputDto);
+
+        assertNotNull(result);
+        assertEquals("nowy@test.pl", result.getEmail());
+        assertEquals("zakodowane_haslo_xyz", result.getPassword());
+        assertNotNull(result.getVerificationCode());
+
+        verify(emailService, times(1)).sendVerificationEmail(anyString(), anyString(), anyString());
+    }
+
+    @Test
+    void signup_ShouldThrowException_WhenEmailIsTaken() throws MessagingException {
+        RegisterUserDto inputDto = new RegisterUserDto();
+        inputDto.setEmail("zajety@test.pl");
+        inputDto.setPassword("haslo123");
+
+        when(userRepository.existsByEmail(inputDto.getEmail())).thenReturn(true);
+
+        assertThrows(EmailAlreadyUsedException.class, () -> {
+            authenticationService.signup(inputDto);
+        });
+
+        verify(userRepository, never()).save(any());
+        verify(emailService, never()).sendVerificationEmail(any(), any(), any());
+    }
+}
