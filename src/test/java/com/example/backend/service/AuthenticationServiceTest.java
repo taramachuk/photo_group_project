@@ -138,6 +138,25 @@ class AuthenticationServiceTest {
     }
 
 
+    @Test
+    void verifyUser_ShouldThrowException_WhenCodeExpired() {
+        VerifyUserDto inputDto = new VerifyUserDto();
+        inputDto.setEmail("stary_kod@test.pl");
+        inputDto.setVerificationCode("123456");
+
+        User user = new User();
+        user.setVerificationCode("123456");
+        user.setVerificationCodeExpiresAt(LocalDateTime.now().minusMinutes(5));
+
+        when(userRepository.findByEmail(inputDto.getEmail())).thenReturn(Optional.of(user));
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            authenticationService.verifyUser(inputDto);
+        });
+
+        assertEquals("Verification code has expired", exception.getMessage());
+        verify(userRepository, never()).save(any());
+    }
 
 
 }
