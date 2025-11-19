@@ -197,5 +197,18 @@ class AuthenticationServiceTest {
     }
 
 
+    @Test
+    void resendVerificationCode_ShouldThrowException_WhenUserNotFound() {
+        String email = "duch@test.pl";
+        when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            authenticationService.resendVerificationCode(email);
+        });
+
+        assertEquals("User not found", exception.getMessage());
+    }
+
+
 
 }
