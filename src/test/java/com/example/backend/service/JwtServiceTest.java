@@ -21,5 +21,23 @@ class JwtServiceTest {
 
     private UserDetails userDetails;
 
+    @BeforeEach
+    void setUp() {
+        String secretKey = "404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970";
+        long expirationTime = 3600000;
+
+        ReflectionTestUtils.setField(jwtService, "secretKey", secretKey);
+        ReflectionTestUtils.setField(jwtService, "jwtExpiration", expirationTime);
+
+        userDetails = new User("test@example.com", "password", new ArrayList<>());
+    }
+
+    @Test
+    void generateToken_ShouldReturnTokenString() {
+        String token = jwtService.generateToken(userDetails);
+
+        assertNotNull(token);
+        assertFalse(token.isEmpty());
+    }
 
 }
