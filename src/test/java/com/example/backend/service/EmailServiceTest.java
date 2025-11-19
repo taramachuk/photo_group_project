@@ -34,4 +34,16 @@ class EmailServiceTest {
     }
 
 
+    @Test
+    void sendVerificationEmail_ShouldThrowException_WhenSendingFails() {
+        MimeMessage mimeMessage = mock(MimeMessage.class);
+        when(emailSender.createMimeMessage()).thenReturn(mimeMessage);
+
+        doThrow(new RuntimeException("SMTP Error")).when(emailSender).send(mimeMessage);
+
+        assertThrows(RuntimeException.class, () -> {
+            emailService.sendVerificationEmail("test@example.com", "Temat", "Treść");
+        });
+    }
+
 }
