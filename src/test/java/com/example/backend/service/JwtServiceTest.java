@@ -40,4 +40,14 @@ class JwtServiceTest {
         assertFalse(token.isEmpty());
     }
 
+    @Test
+    void extractUsername_ShouldReturnCorrectUsername() {
+        String token = jwtService.generateToken(userDetails);
+
+        String username = jwtService.extractUsername(token);
+
+        assertEquals("test@example.com", username);
+    }
+
+
 }
