@@ -58,5 +58,16 @@ class JwtServiceTest {
         assertTrue(isValid);
     }
 
+    @Test
+    void isTokenValid_ShouldReturnFalse_ForDifferentUser() {
+        String token = jwtService.generateToken(userDetails);
+
+        UserDetails otherUser = new User("hacker@example.com", "password", new ArrayList<>());
+
+        boolean isValid = jwtService.isTokenValid(token, otherUser);
+
+        assertFalse(isValid);
+    }
+
 
 }
