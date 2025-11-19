@@ -2,6 +2,7 @@ package com.example.backend.service;
 
 import com.example.backend.dto.LoginUserDto;
 import com.example.backend.dto.RegisterUserDto;
+import com.example.backend.dto.VerifyUserDto;
 import com.example.backend.exception.EmailAlreadyUsedException;
 import com.example.backend.exception.InvalidLoginException;
 import com.example.backend.model.User;
@@ -15,6 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -113,5 +115,29 @@ class AuthenticationServiceTest {
 
         verify(authenticationManager, never()).authenticate(any());
     }
+
+    @Test
+    void verifyUser_ShouldEnableUser_WhenCodeIsValid() {
+        VerifyUserDto inputDto = new VerifyUserDto();
+        inputDto.setEmail("weryfikacja@test.pl");
+        inputDto.setVerificationCode("123456");
+
+        User user = new User();
+        user.setEmail("weryfikacja@test.pl");
+        user.setVerificationCode("123456");
+        user.setVerificationCodeExpiresAt(LocalDateTime.now().plusMinutes(10));
+        user.setEnabled(false);
+
+        when(userRepository.findByEmail(inputDto.getEmail())).thenReturn(Optional.of(user));
+
+        authenticationService.verifyUser(inputDto);
+
+        assertTrue(user.isEnabled());
+        assertNull(user.getVerificationCode());
+        verify(userRepository, times(1)).save(user);
+    }
+
+
+
 
 }
