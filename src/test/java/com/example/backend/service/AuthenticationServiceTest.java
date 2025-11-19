@@ -1,7 +1,9 @@
 package com.example.backend.service;
 
+import com.example.backend.dto.LoginUserDto;
 import com.example.backend.dto.RegisterUserDto;
 import com.example.backend.exception.EmailAlreadyUsedException;
+import com.example.backend.exception.InvalidLoginException;
 import com.example.backend.model.User;
 import com.example.backend.repository.UserRepository;
 import jakarta.mail.MessagingException;
@@ -12,6 +14,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -73,4 +77,41 @@ class AuthenticationServiceTest {
         verify(userRepository, never()).save(any());
         verify(emailService, never()).sendVerificationEmail(any(), any(), any());
     }
+
+    @Test
+    void authenticate_ShouldReturnUser_WhenCredentialsAreValid() {
+        LoginUserDto loginDto = new LoginUserDto();
+        loginDto.setEmail("stary@test.pl");
+        loginDto.setPassword("dobreHaslo");
+
+        User existingUser = new User();
+        existingUser.setEmail("stary@test.pl");
+        existingUser.setPassword("zakodowane_haslo");
+        existingUser.setEnabled(true);
+
+        when(userRepository.findByEmail(loginDto.getEmail())).thenReturn(Optional.of(existingUser));
+
+        User result = authenticationService.authenticate(loginDto);
+
+        assertNotNull(result);
+        assertEquals("stary@test.pl", result.getEmail());
+
+        verify(authenticationManager, times(1)).authenticate(any());
+    }
+
+    @Test
+    void authenticate_ShouldThrowException_WhenUserNotFound() {
+        LoginUserDto loginDto = new LoginUserDto();
+        loginDto.setEmail("duch@test.pl");
+        loginDto.setPassword("cokolwiek");
+
+        when(userRepository.findByEmail(loginDto.getEmail())).thenReturn(Optional.empty());
+
+        assertThrows(InvalidLoginException.class, () -> {
+            authenticationService.authenticate(loginDto);
+        });
+
+        verify(authenticationManager, never()).authenticate(any());
+    }
+
 }
