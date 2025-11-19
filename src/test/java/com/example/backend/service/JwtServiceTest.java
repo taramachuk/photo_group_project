@@ -49,5 +49,14 @@ class JwtServiceTest {
         assertEquals("test@example.com", username);
     }
 
+    @Test
+    void isTokenValid_ShouldReturnTrue_ForValidUser() {
+        String token = jwtService.generateToken(userDetails);
+
+        boolean isValid = jwtService.isTokenValid(token, userDetails);
+
+        assertTrue(isValid);
+    }
+
 
 }
