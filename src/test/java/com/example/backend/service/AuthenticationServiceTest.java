@@ -210,7 +210,7 @@ class AuthenticationServiceTest {
     }
 
     @Test
-    void resendVerificationCode_ShouldThrowException_WhenUserAlreadyVerified() {
+    void resendVerificationCode_ShouldThrowException_WhenUserAlreadyVerified() throws MessagingException {
         String email = "aktywny@test.pl";
         User user = new User();
         user.setEnabled(true);
