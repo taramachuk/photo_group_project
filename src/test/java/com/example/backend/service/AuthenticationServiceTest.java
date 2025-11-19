@@ -158,5 +158,24 @@ class AuthenticationServiceTest {
         verify(userRepository, never()).save(any());
     }
 
+    @Test
+    void verifyUser_ShouldThrowException_WhenCodeIsInvalid() {
+        VerifyUserDto inputDto = new VerifyUserDto();
+        inputDto.setEmail("zly_kod@test.pl");
+        inputDto.setVerificationCode("999999");
+
+        User user = new User();
+        user.setVerificationCode("123456");
+        user.setVerificationCodeExpiresAt(LocalDateTime.now().plusMinutes(10));
+
+        when(userRepository.findByEmail(inputDto.getEmail())).thenReturn(Optional.of(user));
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            authenticationService.verifyUser(inputDto);
+        });
+
+        assertEquals("Invalid verification code", exception.getMessage());
+    }
+
 
 }
