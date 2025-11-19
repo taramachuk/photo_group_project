@@ -177,5 +177,25 @@ class AuthenticationServiceTest {
         assertEquals("Invalid verification code", exception.getMessage());
     }
 
+    @Test
+    void resendVerificationCode_ShouldUpdateCodeAndSendEmail_WhenUserExistsAndNotVerified() throws MessagingException {
+        String email = "niezweryfikowany@test.pl";
+        User user = new User();
+        user.setEmail(email);
+        user.setEnabled(false);
+        user.setVerificationCode("111111");
+
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
+
+        authenticationService.resendVerificationCode(email);
+
+        assertNotEquals("111111", user.getVerificationCode());
+        assertNotNull(user.getVerificationCodeExpiresAt());
+
+        verify(userRepository).save(user);
+        verify(emailService).sendVerificationEmail(anyString(), anyString(), anyString());
+    }
+
+
 
 }
