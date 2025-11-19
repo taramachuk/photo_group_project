@@ -21,4 +21,17 @@ class EmailServiceTest {
     @InjectMocks
     private EmailService emailService;
 
+    @Test
+    void sendVerificationEmail_ShouldSendEmail_WhenDataIsValid() throws MessagingException {
+
+        MimeMessage mimeMessage = mock(MimeMessage.class);
+
+        when(emailSender.createMimeMessage()).thenReturn(mimeMessage);
+
+        emailService.sendVerificationEmail("test@example.com", "Weryfikacja", "Kod: 123");
+
+        verify(emailSender, times(1)).send(mimeMessage);
+    }
+
+
 }
