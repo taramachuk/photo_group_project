@@ -2,6 +2,8 @@ package com.example.backend.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -19,6 +21,7 @@ public class Comment {
     @Column(columnDefinition = "TEXT", nullable = false)
     private String content;
 
+    @CreationTimestamp 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
