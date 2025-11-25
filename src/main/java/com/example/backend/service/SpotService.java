@@ -1,6 +1,8 @@
 package com.example.backend.service;
 
 import com.example.backend.dto.CreateSpotDto;
+import com.example.backend.dto.UpdateSpotDto;
+import com.example.backend.exception.UnauthorizedException;
 import com.example.backend.model.Address;
 import com.example.backend.model.Spot;
 import com.example.backend.model.SpotTag;
@@ -142,6 +144,87 @@ public class SpotService {
             if (spot.getAddress() != null) spot.getAddress().getName();
         });
         return spots;
+    }
+
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    public Optional<Spot> getSpotById(Long id) {
+        Optional<Spot> spotOptional = spotRepository.findById(id);
+        
+        if (spotOptional.isPresent()) {
+            Spot spot = spotOptional.get();
+            if (spot.getAuthor() != null) spot.getAuthor().getEmail();
+            if (spot.getAddress() != null) spot.getAddress().getName();
+        }
+        
+        return spotOptional;
+    }
+
+    @Transactional
+    public Spot updateSpot(Long id, UpdateSpotDto dto, User currentUser) {
+        Spot spot = spotRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Spot not found"));
+
+        // Weryfikacja autora
+        if (spot.getAuthor() == null || spot.getAuthor().getId() != currentUser.getId()) {
+            throw new UnauthorizedException("You can only edit your own spots");
+        }
+
+        // Aktualizacja podstawowych pól
+        if (dto.getTitle() != null) {
+            spot.setTitle(dto.getTitle());
+        }
+        if (dto.getDescription() != null) {
+            spot.setDescription(dto.getDescription());
+        }
+        if (dto.getLatitude() != null) {
+            spot.setLatitude(dto.getLatitude());
+        }
+        if (dto.getLongitude() != null) {
+            spot.setLongitude(dto.getLongitude());
+        }
+        if (dto.getCategoryId() != null) {
+            spot.setCategoryId(dto.getCategoryId());
+        }
+
+        // Aktualizacja adresu (jeśli się zmienił)
+        if (dto.getAddressName() != null || dto.getAddressCountry() != null || dto.getAddressRegion() != null) {
+            String addressName = dto.getAddressName() != null ? dto.getAddressName() : spot.getAddress().getName();
+            String addressCountry = dto.getAddressCountry() != null ? dto.getAddressCountry() : spot.getAddress().getCountry();
+            String addressRegion = dto.getAddressRegion() != null ? dto.getAddressRegion() : spot.getAddress().getRegion();
+
+            Address newAddress = getOrCreateAddress(addressName, addressCountry, addressRegion);
+            spot.setAddress(newAddress);
+        }
+
+        spot = spotRepository.save(spot);
+
+        // Aktualizacja tagów (jeśli są podane)
+        if (dto.getTagNames() != null) {
+            // Usunięcie starych tagów
+            List<SpotTag> existingTags = spotTagRepository.findById_SpotId(spot.getId());
+            spotTagRepository.deleteAll(existingTags);
+
+            // Dodanie nowych tagów
+            if (!dto.getTagNames().isEmpty()) {
+                for (String tagName : dto.getTagNames()) {
+                    if (tagName != null && !tagName.trim().isEmpty()) {
+                        String normalizedTagName = tagName.trim().toLowerCase();
+                        Tag tag = getOrCreateTag(normalizedTagName);
+
+                        SpotTagId spotTagId = new SpotTagId(spot.getId(), tag.getId());
+                        SpotTag spotTag = SpotTag.builder()
+                                .id(spotTagId)
+                                .spot(spot)
+                                .tag(tag)
+                                .build();
+
+                        spotTagRepository.save(spotTag);
+                    }
+                }
+            }
+        }
+
+        return spot;
     }
 
     @Transactional

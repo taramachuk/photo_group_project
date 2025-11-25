@@ -2,6 +2,7 @@ package com.example.backend.controller;
 
 import com.example.backend.dto.CreateSpotDto;
 import com.example.backend.dto.SpotDto;
+import com.example.backend.dto.UpdateSpotDto;
 import com.example.backend.mapper.SpotMapper;
 import com.example.backend.model.Spot;
 import com.example.backend.model.User;
@@ -96,6 +97,39 @@ public class SpotController {
     ) {
         List<Spot> spots = spotService.searchByTagNameAndTitle(tagName, title);
         return ResponseEntity.ok(spotMapper.toDtoList(spots));
+    }
+
+
+    // GET /spots/{id} do aktualizacji spotu
+    @GetMapping("/{id}")
+    public ResponseEntity<SpotDto> getSpotById(@PathVariable Long id) {
+        return spotService.getSpotById(id)
+                .map(spot -> ResponseEntity.ok(spotMapper.toDto(spot)))
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<SpotDto> updateSpot(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateSpotDto dto
+    ) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) authentication.getPrincipal();
+
+        Spot updatedSpot = spotService.updateSpot(id, dto, currentUser);
+        return ResponseEntity.ok(spotMapper.toDto(updatedSpot));
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<SpotDto> patchSpot(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateSpotDto dto
+    ) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) authentication.getPrincipal();
+
+        Spot updatedSpot = spotService.updateSpot(id, dto, currentUser);
+        return ResponseEntity.ok(spotMapper.toDto(updatedSpot));
     }
 
     @PostMapping

@@ -23,12 +23,17 @@ public interface SpotRepository extends CrudRepository<Spot, Long> {
     );
 
     // Wyszukiwanie spotów w obszarze mapy z filtrowaniem po tytule
+    @Query(value = "SELECT s.* FROM spots s " +
+           "WHERE s.latitude BETWEEN :minLat AND :maxLat " +
+           "AND s.longitude BETWEEN :minLng AND :maxLng " +
+           "AND LOWER(s.title) LIKE '%' || LOWER(:title) || '%'",
+           nativeQuery = true)
     List<Spot> findByLatitudeBetweenAndLongitudeBetweenAndTitleContainingIgnoreCase(
-            BigDecimal minLatitude,
-            BigDecimal maxLatitude,
-            BigDecimal minLongitude,
-            BigDecimal maxLongitude,
-            String title
+            @Param("minLat") BigDecimal minLatitude,
+            @Param("maxLat") BigDecimal maxLatitude,
+            @Param("minLng") BigDecimal minLongitude,
+            @Param("maxLng") BigDecimal maxLongitude,
+            @Param("title") String title
     );
 
     // Wyszukiwanie spotów w obszarze mapy z podaniem tagu
