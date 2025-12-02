@@ -1,30 +1,41 @@
 package com.example.backend.service;
 
 import com.example.backend.dto.CreatePhotoDto;
+import com.example.backend.dto.UploadPhotoDto;
 import com.example.backend.exception.UnauthorizedException;
 import com.example.backend.model.Photo;
 import com.example.backend.model.Spot;
 import com.example.backend.model.User;
 import com.example.backend.repository.PhotoRepository;
 import com.example.backend.repository.SpotRepository;
+import com.example.backend.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 @Service
 public class PhotoService {
     private final PhotoRepository photoRepository;
     private final SpotRepository spotRepository;
 
+    private static final String UPLOAD_DIR = "uploads/";
+    private final UserRepository userRepository;
+
     public PhotoService(
             PhotoRepository photoRepository,
-            SpotRepository spotRepository
-    ) {
+            SpotRepository spotRepository,
+            UserRepository userRepository) {
         this.photoRepository = photoRepository;
         this.spotRepository = spotRepository;
+        this.userRepository = userRepository;
     }
 
     @Transactional
@@ -81,6 +92,27 @@ public class PhotoService {
         }
 
         photoRepository.delete(photo);
+    }
+
+    public Photo savePicture(MultipartFile file, UploadPhotoDto dto, User author) throws IOException {
+        Spot spot = spotRepository.findById(dto.getSpotId())
+                .orElseThrow(() -> new RuntimeException("Spot not found"));
+
+        String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+        Path filePath = Paths.get(UPLOAD_DIR + fileName);
+        Files.copy(file.getInputStream(), filePath);
+
+        String url = "http://localhost:8080/" + fileName;
+
+        Photo photo = new Photo();
+        photo.setUrl(url);
+        photo.setThumbnailUrl(null); // or generate a thumbnail URL if needed
+        photo.setCaption(dto.getCaption());
+        photo.setAuthor(author);
+        photo.setSpot(spot);
+        photo.setCreatedAt(LocalDateTime.now());
+
+        return photoRepository.save(photo);
     }
 }
 
