@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -22,5 +23,6 @@ public class SpotDto {
     private Integer categoryId;
     private AuthorDto author;
     private AddressDto address;
+    private List<String> tagNames;
 }
 

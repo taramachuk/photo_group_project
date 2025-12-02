@@ -42,6 +42,8 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/spots/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/photos/spot/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/tags/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/spots/**").authenticated()
                         .anyRequest().authenticated()
                 )
