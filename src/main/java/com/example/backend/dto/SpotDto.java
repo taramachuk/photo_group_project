@@ -24,5 +24,7 @@ public class SpotDto {
     private AuthorDto author;
     private AddressDto address;
     private List<String> tagNames;
+    private Long likeCount;
+    private Boolean isLiked;
 }
 

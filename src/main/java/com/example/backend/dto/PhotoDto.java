@@ -19,5 +19,7 @@ public class PhotoDto {
     private LocalDateTime createdAt;
     private AuthorDto author;
     private Long spotId;
+    private Long likeCount;
+    private Boolean isLiked;
 }
 
