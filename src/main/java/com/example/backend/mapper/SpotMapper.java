@@ -8,6 +8,7 @@ import com.example.backend.model.Spot;
 import com.example.backend.model.SpotTag;
 import com.example.backend.model.User;
 import com.example.backend.repository.SpotTagRepository;
+import com.example.backend.service.LikesService;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -17,12 +18,18 @@ import java.util.stream.Collectors;
 public class SpotMapper {
 
     private final SpotTagRepository spotTagRepository;
+    private final LikesService likesService;
 
-    public SpotMapper(SpotTagRepository spotTagRepository) {
+    public SpotMapper(SpotTagRepository spotTagRepository, LikesService likesService) {
         this.spotTagRepository = spotTagRepository;
+        this.likesService = likesService;
     }
 
     public SpotDto toDto(Spot spot) {
+        return toDto(spot, null);
+    }
+
+    public SpotDto toDto(Spot spot, User currentUser) {
         if (spot == null) {
             return null;
         }
@@ -35,6 +42,11 @@ public class SpotMapper {
                     .collect(Collectors.toList());
         }
 
+        Long likeCount = likesService.getSpotLikeCount(spot.getId());
+        Boolean isLiked = currentUser != null
+                ? likesService.isSpotLiked(spot.getId(), currentUser)
+                : false;
+
         return SpotDto.builder()
                 .id(spot.getId())
                 .title(spot.getTitle())
@@ -46,15 +58,21 @@ public class SpotMapper {
                 .author(toAuthorDto(spot.getAuthor()))
                 .address(toAddressDto(spot.getAddress()))
                 .tagNames(tagNames)
+                .likeCount(likeCount)
+                .isLiked(isLiked)
                 .build();
     }
 
     public List<SpotDto> toDtoList(List<Spot> spots) {
+        return toDtoList(spots, null);
+    }
+
+    public List<SpotDto> toDtoList(List<Spot> spots, User currentUser) {
         if (spots == null) {
             return null;
         }
         return spots.stream()
-                .map(this::toDto)
+                .map(spot -> toDto(spot, currentUser))
                 .collect(Collectors.toList());
     }
 
