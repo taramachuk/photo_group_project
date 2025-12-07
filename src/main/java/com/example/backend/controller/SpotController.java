@@ -31,7 +31,8 @@ public class SpotController {
     @GetMapping("/search/title")
     public ResponseEntity<List<SpotDto>> searchByTitle(@RequestParam String title) {
         List<Spot> spots = spotService.searchByTitle(title);
-        return ResponseEntity.ok(spotMapper.toDtoList(spots));
+        User currentUser = getCurrentUserIfAuthenticated();
+        return ResponseEntity.ok(spotMapper.toDtoList(spots, currentUser));
     }
 
     @GetMapping("/map/search")
@@ -42,7 +43,8 @@ public class SpotController {
             @RequestParam BigDecimal maxLng
     ) {
         List<Spot> spots = spotService.getSpotsInMapArea(minLat, maxLat, minLng, maxLng);
-        return ResponseEntity.ok(spotMapper.toDtoList(spots));
+        User currentUser = getCurrentUserIfAuthenticated();
+        return ResponseEntity.ok(spotMapper.toDtoList(spots, currentUser));
     }
 
     @GetMapping("/map/search/title")
@@ -54,7 +56,8 @@ public class SpotController {
             @RequestParam String title
     ) {
         List<Spot> spots = spotService.searchSpotsInMapAreaByTitle(minLat, maxLat, minLng, maxLng, title);
-        return ResponseEntity.ok(spotMapper.toDtoList(spots));
+        User currentUser = getCurrentUserIfAuthenticated();
+        return ResponseEntity.ok(spotMapper.toDtoList(spots, currentUser));
     }
 
     @GetMapping("/map/search/tag")
@@ -66,7 +69,8 @@ public class SpotController {
             @RequestParam String tagName
     ) {
         List<Spot> spots = spotService.searchSpotsInMapAreaByTag(minLat, maxLat, minLng, maxLng, tagName);
-        return ResponseEntity.ok(spotMapper.toDtoList(spots));
+        User currentUser = getCurrentUserIfAuthenticated();
+        return ResponseEntity.ok(spotMapper.toDtoList(spots, currentUser));
     }
 
     @GetMapping("/map/search/advanced")
@@ -81,13 +85,15 @@ public class SpotController {
         List<Spot> spots = spotService.searchSpotsInMapAreaByTagAndTitle(
                 minLat, maxLat, minLng, maxLng, tagName, title
         );
-        return ResponseEntity.ok(spotMapper.toDtoList(spots));
+        User currentUser = getCurrentUserIfAuthenticated();
+        return ResponseEntity.ok(spotMapper.toDtoList(spots, currentUser));
     }
 
     @GetMapping("/tag")
     public ResponseEntity<List<SpotDto>> searchByTagName(@RequestParam String tagName) {
         List<Spot> spots = spotService.searchByTagName(tagName);
-        return ResponseEntity.ok(spotMapper.toDtoList(spots));
+        User currentUser = getCurrentUserIfAuthenticated();
+        return ResponseEntity.ok(spotMapper.toDtoList(spots, currentUser));
     }
 
     @GetMapping("/tag/search")
@@ -96,15 +102,17 @@ public class SpotController {
             @RequestParam String title
     ) {
         List<Spot> spots = spotService.searchByTagNameAndTitle(tagName, title);
-        return ResponseEntity.ok(spotMapper.toDtoList(spots));
+        User currentUser = getCurrentUserIfAuthenticated();
+        return ResponseEntity.ok(spotMapper.toDtoList(spots, currentUser));
     }
 
 
     // GET /spots/{id} do aktualizacji spotu
     @GetMapping("/{id}")
     public ResponseEntity<SpotDto> getSpotById(@PathVariable Long id) {
+        User currentUser = getCurrentUserIfAuthenticated();
         return spotService.getSpotById(id)
-                .map(spot -> ResponseEntity.ok(spotMapper.toDto(spot)))
+                .map(spot -> ResponseEntity.ok(spotMapper.toDto(spot, currentUser)))
                 .orElse(ResponseEntity.notFound().build());
     }
 
@@ -129,7 +137,7 @@ public class SpotController {
         User currentUser = (User) authentication.getPrincipal();
 
         Spot updatedSpot = spotService.updateSpot(id, dto, currentUser);
-        return ResponseEntity.ok(spotMapper.toDto(updatedSpot));
+        return ResponseEntity.ok(spotMapper.toDto(updatedSpot, currentUser));
     }
 
     @PostMapping
@@ -138,7 +146,19 @@ public class SpotController {
         User currentUser = (User) authentication.getPrincipal();
 
         Spot createdSpot = spotService.createSpot(dto, currentUser);
-        return ResponseEntity.status(HttpStatus.CREATED).body(spotMapper.toDto(createdSpot));
+        return ResponseEntity.status(HttpStatus.CREATED).body(spotMapper.toDto(createdSpot, currentUser));
+    }
+
+    private User getCurrentUserIfAuthenticated() {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication != null && authentication.getPrincipal() instanceof User) {
+                return (User) authentication.getPrincipal();
+            }
+        } catch (Exception e) {
+            // Użytkownik nie jest zalogowany
+        }
+        return null;
     }
 }
 

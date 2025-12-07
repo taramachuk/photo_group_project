@@ -37,19 +37,21 @@ public class PhotoController {
         User currentUser = (User) authentication.getPrincipal();
 
         Photo createdPhoto = photoService.createPhoto(dto, currentUser);
-        return ResponseEntity.status(HttpStatus.CREATED).body(photoMapper.toDto(createdPhoto));
+        return ResponseEntity.status(HttpStatus.CREATED).body(photoMapper.toDto(createdPhoto, currentUser));
     }
 
     @GetMapping("/spot/{spotId}")
     public ResponseEntity<List<PhotoDto>> getPhotosBySpotId(@PathVariable Long spotId) {
         List<Photo> photos = photoService.getPhotosBySpotId(spotId);
-        return ResponseEntity.ok(photoMapper.toDtoList(photos));
+        User currentUser = getCurrentUserIfAuthenticated();
+        return ResponseEntity.ok(photoMapper.toDtoList(photos, currentUser));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<PhotoDto> getPhotoById(@PathVariable Long id) {
+        User currentUser = getCurrentUserIfAuthenticated();
         return photoService.getPhotoById(id)
-                .map(photo -> ResponseEntity.ok(photoMapper.toDto(photo)))
+                .map(photo -> ResponseEntity.ok(photoMapper.toDto(photo, currentUser)))
                 .orElse(ResponseEntity.notFound().build());
     }
 
@@ -88,6 +90,17 @@ public class PhotoController {
         } catch (Exception e) {
             return ResponseEntity.status(500)
                     .body(Map.of("message", "Upload failed", "error", e.getMessage()));        }
+    }
+    private User getCurrentUserIfAuthenticated() {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication != null && authentication.getPrincipal() instanceof User) {
+                return (User) authentication.getPrincipal();
+            }
+        } catch (Exception e) {
+            // Użytkownik nie jest zalogowany
+        }
+        return null;
     }
 }
 
