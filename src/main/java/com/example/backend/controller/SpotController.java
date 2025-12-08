@@ -1,0 +1,208 @@
+package com.example.backend.controller;
+
+import com.example.backend.dto.CreateSpotDto;
+import com.example.backend.dto.SpotDto;
+import com.example.backend.dto.UpdateSpotDto;
+import com.example.backend.mapper.SpotMapper;
+import com.example.backend.model.Spot;
+import com.example.backend.model.User;
+import com.example.backend.service.SpotService;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.*;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+@RequestMapping("/spots")
+@RestController
+public class SpotController {
+    private final SpotService spotService;
+    private final SpotMapper spotMapper;
+
+    public SpotController(SpotService spotService, SpotMapper spotMapper) {
+        this.spotService = spotService;
+        this.spotMapper = spotMapper;
+    }
+
+    @GetMapping("/search/title")
+    public ResponseEntity<List<SpotDto>> searchByTitle(@RequestParam String title) {
+        List<Spot> spots = spotService.searchByTitle(title);
+        User currentUser = getCurrentUserIfAuthenticated();
+
+        List<SpotDto> dtos = spotMapper.toDtoList(spots, currentUser);
+        spotService.setUserInteractionStatus(dtos, currentUser);
+
+        return ResponseEntity.ok(dtos);
+    }
+
+    @GetMapping("/map/search")
+    public ResponseEntity<List<SpotDto>> getSpotsInMapArea(
+            @RequestParam BigDecimal minLat,
+            @RequestParam BigDecimal maxLat,
+            @RequestParam BigDecimal minLng,
+            @RequestParam BigDecimal maxLng
+    ) {
+        List<Spot> spots = spotService.getSpotsInMapArea(minLat, maxLat, minLng, maxLng);
+        User currentUser = getCurrentUserIfAuthenticated();
+
+        List<SpotDto> dtos = spotMapper.toDtoList(spots, currentUser);
+        spotService.setUserInteractionStatus(dtos, currentUser);
+
+        return ResponseEntity.ok(dtos);
+    }
+
+    @GetMapping("/map/search/title")
+    public ResponseEntity<List<SpotDto>> searchSpotsInMapAreaByTitle(
+            @RequestParam BigDecimal minLat,
+            @RequestParam BigDecimal maxLat,
+            @RequestParam BigDecimal minLng,
+            @RequestParam BigDecimal maxLng,
+            @RequestParam String title
+    ) {
+        List<Spot> spots = spotService.searchSpotsInMapAreaByTitle(minLat, maxLat, minLng, maxLng, title);
+        User currentUser = getCurrentUserIfAuthenticated();
+
+        List<SpotDto> dtos = spotMapper.toDtoList(spots, currentUser);
+        spotService.setUserInteractionStatus(dtos, currentUser);
+
+        return ResponseEntity.ok(dtos);
+    }
+
+    @GetMapping("/map/search/tag")
+    public ResponseEntity<List<SpotDto>> searchSpotsInMapAreaByTag(
+            @RequestParam BigDecimal minLat,
+            @RequestParam BigDecimal maxLat,
+            @RequestParam BigDecimal minLng,
+            @RequestParam BigDecimal maxLng,
+            @RequestParam String tagName
+    ) {
+        List<Spot> spots = spotService.searchSpotsInMapAreaByTag(minLat, maxLat, minLng, maxLng, tagName);
+        User currentUser = getCurrentUserIfAuthenticated();
+
+        List<SpotDto> dtos = spotMapper.toDtoList(spots, currentUser);
+        spotService.setUserInteractionStatus(dtos, currentUser);
+
+        return ResponseEntity.ok(dtos);
+    }
+
+    @GetMapping("/map/search/advanced")
+    public ResponseEntity<List<SpotDto>> searchSpotsInMapAreaByTagAndTitle(
+            @RequestParam BigDecimal minLat,
+            @RequestParam BigDecimal maxLat,
+            @RequestParam BigDecimal minLng,
+            @RequestParam BigDecimal maxLng,
+            @RequestParam String tagName,
+            @RequestParam String title
+    ) {
+        List<Spot> spots = spotService.searchSpotsInMapAreaByTagAndTitle(
+                minLat, maxLat, minLng, maxLng, tagName, title
+        );
+        User currentUser = getCurrentUserIfAuthenticated();
+
+        List<SpotDto> dtos = spotMapper.toDtoList(spots, currentUser);
+        spotService.setUserInteractionStatus(dtos, currentUser);
+
+        return ResponseEntity.ok(dtos);
+    }
+
+    @GetMapping("/tag")
+    public ResponseEntity<List<SpotDto>> searchByTagName(@RequestParam String tagName) {
+        List<Spot> spots = spotService.searchByTagName(tagName);
+        User currentUser = getCurrentUserIfAuthenticated();
+
+        List<SpotDto> dtos = spotMapper.toDtoList(spots, currentUser);
+        spotService.setUserInteractionStatus(dtos, currentUser);
+
+        return ResponseEntity.ok(dtos);
+    }
+
+    @GetMapping("/tag/search")
+    public ResponseEntity<List<SpotDto>> searchByTagNameAndTitle(
+            @RequestParam String tagName,
+            @RequestParam String title
+    ) {
+        List<Spot> spots = spotService.searchByTagNameAndTitle(tagName, title);
+        User currentUser = getCurrentUserIfAuthenticated();
+
+        List<SpotDto> dtos = spotMapper.toDtoList(spots, currentUser);
+        spotService.setUserInteractionStatus(dtos, currentUser); // <--- DODANE
+
+        return ResponseEntity.ok(dtos);
+    }
+
+
+
+    @GetMapping("/{id}")
+    public ResponseEntity<SpotDto> getSpotById(@PathVariable Long id) {
+        User currentUser = getCurrentUserIfAuthenticated();
+        return spotService.getSpotById(id)
+                .map(spot -> {
+                    SpotDto dto = spotMapper.toDto(spot, currentUser);
+
+                    spotService.setUserInteractionStatus(List.of(dto), currentUser);
+                    return ResponseEntity.ok(dto);
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<SpotDto> updateSpot(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateSpotDto dto
+    ) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) authentication.getPrincipal();
+
+        Spot updatedSpot = spotService.updateSpot(id, dto, currentUser);
+        return ResponseEntity.ok(spotMapper.toDto(updatedSpot));
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<SpotDto> patchSpot(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateSpotDto dto
+    ) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) authentication.getPrincipal();
+
+        Spot updatedSpot = spotService.updateSpot(id, dto, currentUser);
+        return ResponseEntity.ok(spotMapper.toDto(updatedSpot, currentUser));
+    }
+
+    @PostMapping
+    public ResponseEntity<SpotDto> createSpot(@Valid @RequestBody CreateSpotDto dto) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) authentication.getPrincipal();
+
+        Spot createdSpot = spotService.createSpot(dto, currentUser);
+        return ResponseEntity.status(HttpStatus.CREATED).body(spotMapper.toDto(createdSpot, currentUser));
+    }
+    @PostMapping("/{id}/save")
+    public ResponseEntity<Void> toggleForLater(@PathVariable Long id) {
+        User currentUser = getCurrentUserIfAuthenticated();
+
+        if (currentUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); // <--- ZABEZPIECZENIE
+        }
+
+        spotService.toggleForLater(id, currentUser);
+        return ResponseEntity.ok().build();
+    }
+
+    private User getCurrentUserIfAuthenticated() {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication != null && authentication.getPrincipal() instanceof User) {
+                return (User) authentication.getPrincipal();
+            }
+        } catch (Exception e) {
+            // Użytkownik nie jest zalogowany
+        }
+        return null;
+    }
+}
+
