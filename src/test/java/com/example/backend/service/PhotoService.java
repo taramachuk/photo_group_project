@@ -67,4 +67,51 @@ class PhotoServiceTest {
 
         verify(photoRepository, times(1)).save(any(Photo.class));
     }
+
+
+
+    @Test
+    void deletePhoto_ShouldDelete_WhenUserIsAuthor() {
+        Long photoId = 100L;
+        User author = new User();
+        author.setId(1L);
+
+        Photo photo = new Photo();
+        photo.setId(photoId);
+        photo.setAuthor(author);
+
+        when(photoRepository.findById(photoId)).thenReturn(Optional.of(photo));
+
+        photoService.deletePhoto(photoId, author);
+
+        verify(photoRepository, times(1)).delete(photo);
+    }
+
+    @Test
+    void deletePhoto_ShouldThrowException_WhenUserIsNotAuthor() {
+        Long photoId = 100L;
+        User author = new User();
+        author.setId(1L);
+
+        User stranger = new User();
+        stranger.setId(99L);
+
+        Photo photo = new Photo();
+        photo.setId(photoId);
+        photo.setAuthor(author);
+
+        when(photoRepository.findById(photoId)).thenReturn(Optional.of(photo));
+
+        assertThrows(com.example.backend.exception.UnauthorizedException.class, () -> {
+            photoService.deletePhoto(photoId, stranger);
+        });
+
+        verify(photoRepository, never()).delete(any(Photo.class));
+    }
+
+
+
+
 }
+
+
