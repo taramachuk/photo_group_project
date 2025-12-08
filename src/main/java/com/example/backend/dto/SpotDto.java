@@ -26,5 +26,6 @@ public class SpotDto {
     private List<String> tagNames;
     private Long likeCount;
     private Boolean isLiked;
+    private Boolean isSaved;
 }
 

@@ -1,18 +1,11 @@
 package com.example.backend.service;
 
 import com.example.backend.dto.CreateSpotDto;
+import com.example.backend.dto.SpotDto;
 import com.example.backend.dto.UpdateSpotDto;
 import com.example.backend.exception.UnauthorizedException;
-import com.example.backend.model.Address;
-import com.example.backend.model.Spot;
-import com.example.backend.model.SpotTag;
-import com.example.backend.model.SpotTagId;
-import com.example.backend.model.Tag;
-import com.example.backend.model.User;
-import com.example.backend.repository.AddressRepository;
-import com.example.backend.repository.SpotRepository;
-import com.example.backend.repository.SpotTagRepository;
-import com.example.backend.repository.TagRepository;
+import com.example.backend.model.*;
+import com.example.backend.repository.*;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +13,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class SpotService {
@@ -27,17 +21,23 @@ public class SpotService {
     private final AddressRepository addressRepository;
     private final TagRepository tagRepository;
     private final SpotTagRepository spotTagRepository;
+    private final SpotLikeRepository spotLikeRepository;
+    private final ForLaterRepository forLaterRepository;
 
     public SpotService(
             SpotRepository spotRepository,
             AddressRepository addressRepository,
             TagRepository tagRepository,
-            SpotTagRepository spotTagRepository
+            SpotLikeRepository spotLikeRepository,
+            SpotTagRepository spotTagRepository,
+            ForLaterRepository forLaterRepository
     ) {
         this.spotRepository = spotRepository;
         this.addressRepository = addressRepository;
         this.tagRepository = tagRepository;
         this.spotTagRepository = spotTagRepository;
+        this.forLaterRepository = forLaterRepository;
+        this.spotLikeRepository = spotLikeRepository;
     }
 
     @org.springframework.transaction.annotation.Transactional(readOnly = true)
@@ -304,6 +304,63 @@ public class SpotService {
         newTag.setName(tagName);
 
         return tagRepository.save(newTag);
+    }
+    @Transactional
+    public void toggleForLater(Long spotId, User user) {
+        ForLaterId id = new ForLaterId(user.getId(), spotId);
+
+        if (forLaterRepository.existsById(id)) {
+
+            forLaterRepository.deleteById(id);
+        } else {
+
+            Spot spot = spotRepository.findById(spotId)
+                    .orElseThrow(() -> new RuntimeException("Spot not found"));
+
+            ForLater forLater = ForLater.builder()
+                    .id(id)
+                    .user(user)
+                    .spot(spot)
+                    .savedAt(LocalDateTime.now())
+                    .build();
+
+            forLaterRepository.save(forLater);
+        }
+    }
+
+
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    public List<Spot> getSavedSpots(User user) {
+        List<ForLater> savedItems = forLaterRepository.findAllByUserIdOrderBySavedAtDesc(user.getId());
+
+
+        return savedItems.stream()
+                .map(ForLater::getSpot)
+                .toList();
+    }
+
+
+    public void setUserInteractionStatus(List<SpotDto> dtos, User currentUser) {
+        if (currentUser == null || dtos.isEmpty()) {
+            return;
+        }
+
+
+        List<SpotLike> likes = spotLikeRepository.findByUserId(currentUser.getId());
+
+        Set<Long> likedSpotIds = likes.stream()
+                .map(like -> like.getId().getSpotId())
+                .collect(java.util.stream.Collectors.toSet());
+        Set<Long> savedSpotIds = forLaterRepository.findSavedSpotIdsByUserId(currentUser.getId());
+
+        for (SpotDto dto : dtos) {
+            if (likedSpotIds.contains(dto.getId())) {
+                dto.setIsLiked(true);
+            }
+            if (savedSpotIds.contains(dto.getId())) {
+                dto.setIsSaved(true);
+            }
+        }
     }
 }
 

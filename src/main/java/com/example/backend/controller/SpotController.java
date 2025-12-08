@@ -148,6 +148,14 @@ public class SpotController {
         Spot createdSpot = spotService.createSpot(dto, currentUser);
         return ResponseEntity.status(HttpStatus.CREATED).body(spotMapper.toDto(createdSpot, currentUser));
     }
+    @PostMapping("/{id}/save")
+    public ResponseEntity<Void> toggleForLater(@PathVariable Long id) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) authentication.getPrincipal();
+
+        spotService.toggleForLater(id, currentUser);
+        return ResponseEntity.ok().build();
+    }
 
     private User getCurrentUserIfAuthenticated() {
         try {
