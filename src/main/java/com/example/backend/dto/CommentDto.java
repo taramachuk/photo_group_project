@@ -6,20 +6,17 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class PhotoDto {
+public class CommentDto {
     private Long id;
-    private String url;
-    private String thumbnailUrl;
-    private String caption;
+    private String content;
     private LocalDateTime createdAt;
     private AuthorDto author;
+    private Long photoId;
     private Long spotId;
-    private List<CommentDto> comments;
 }
 
