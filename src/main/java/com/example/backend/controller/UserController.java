@@ -1,5 +1,11 @@
 package com.example.backend.controller;
 
+import com.example.backend.dto.SpotDto;
+import com.example.backend.dto.PhotoDto;
+import com.example.backend.model.Spot;
+import com.example.backend.model.Photo;
+import com.example.backend.repository.SpotRepository;
+import com.example.backend.repository.PhotoRepository;
 import com.example.backend.dto.LoginUserDto;
 import com.example.backend.model.User;
 import com.example.backend.service.UserService;
@@ -13,15 +19,21 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Collections;
+import java.util.ArrayList;
 
 @RequestMapping("/users")
 @RestController
 public class UserController {
     private final UserService userService;
+    private final SpotRepository spotRepository;
+    private final PhotoRepository photoRepository;
     private final Logger logger = LogManager.getLogger(UserController.class);
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, SpotRepository spotRepository, PhotoRepository photoRepository) {
         this.userService = userService;
+        this.spotRepository = spotRepository;
+        this.photoRepository = photoRepository;
     }
 
     @GetMapping("/me")
@@ -36,6 +48,57 @@ public class UserController {
         dto.setPassword(currentUser.getPassword());
 
         return ResponseEntity.ok(dto);
+    }
+    @GetMapping("/me/spots")
+    public ResponseEntity<List<SpotDto>> getMySpots() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) authentication.getPrincipal();
+
+
+        List<Spot> spots = spotRepository.findByAuthor(currentUser);
+
+        if (spots == null) return ResponseEntity.ok(Collections.emptyList());
+
+        List<SpotDto> dtos = new ArrayList<>();
+        for (Spot spot : spots) {
+            SpotDto dto = new SpotDto();
+            dto.setId(spot.getId());
+            dto.setTitle(spot.getTitle());
+            // do dopisania
+            dtos.add(dto);
+        }
+
+        return ResponseEntity.ok(dtos);
+    }
+
+
+    @GetMapping("/me/photos")
+    public ResponseEntity<List<PhotoDto>> getMyPhotos() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) authentication.getPrincipal();
+
+        List<Photo> photos = photoRepository.findByAuthor(currentUser);
+
+        if (photos == null) return ResponseEntity.ok(Collections.emptyList());
+
+        List<PhotoDto> dtos = new ArrayList<>();
+        for (Photo photo : photos) {
+            PhotoDto dto = new PhotoDto();
+            dto.setId(photo.getId());
+            dto.setUrl(photo.getUrl());
+            dto.setThumbnailUrl(photo.getThumbnailUrl());
+
+
+
+            dtos.add(dto);
+        }
+
+        return ResponseEntity.ok(dtos);
+    }
+
+    @GetMapping("/me/saved")
+    public ResponseEntity<List<SpotDto>> getSavedSpots() {
+        return ResponseEntity.ok(Collections.emptyList());
     }
 
     @GetMapping("/")
