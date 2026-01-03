@@ -46,6 +46,7 @@ public class SecurityConfiguration {
                         .requestMatchers(HttpMethod.GET, "/tags/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/comments/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/spots/**").authenticated()
+                        .requestMatchers("/for-later/**").authenticated()
                         .requestMatchers(HttpMethod.GET,"/photos/get/**").permitAll()
                         .anyRequest().authenticated()
                 )
