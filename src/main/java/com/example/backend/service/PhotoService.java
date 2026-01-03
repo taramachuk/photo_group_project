@@ -98,11 +98,14 @@ public class PhotoService {
         Spot spot = spotRepository.findById(dto.getSpotId())
                 .orElseThrow(() -> new RuntimeException("Spot not found"));
 
-        String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+//        String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+        String extension = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
+
+        String fileName = System.currentTimeMillis()+extension;
         Path filePath = Paths.get(UPLOAD_DIR + fileName);
         Files.copy(file.getInputStream(), filePath);
 
-        String url = "http://localhost:8080/" + fileName;
+        String url = "http://localhost:8080/photos/get/" + fileName;
 
         Photo photo = new Photo();
         photo.setUrl(url);
