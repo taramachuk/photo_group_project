@@ -14,9 +14,9 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import com.example.backend.dto.UpdateUserDto;
+import com.example.backend.repository.UserRepository;
 
 import java.util.List;
 import java.util.Collections;
@@ -28,12 +28,14 @@ public class UserController {
     private final UserService userService;
     private final SpotRepository spotRepository;
     private final PhotoRepository photoRepository;
+    private final UserRepository userRepository;
     private final Logger logger = LogManager.getLogger(UserController.class);
 
-    public UserController(UserService userService, SpotRepository spotRepository, PhotoRepository photoRepository) {
+    public UserController(UserService userService, SpotRepository spotRepository, PhotoRepository photoRepository, UserRepository userRepository) {
         this.userService = userService;
         this.spotRepository = spotRepository;
         this.photoRepository = photoRepository;
+        this.userRepository = userRepository;
     }
 
     @GetMapping("/me")
@@ -105,6 +107,22 @@ public class UserController {
     public ResponseEntity<List<User>> allUsers() {
         List<User> users = userService.allUsers();
         return ResponseEntity.ok(users);
+    }
+
+    @PutMapping("/me")
+    public ResponseEntity<User> updateCurrentUser(@RequestBody UpdateUserDto dto) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) authentication.getPrincipal();
+
+
+        if (dto.getDisplayName() != null) currentUser.setDisplayName(dto.getDisplayName());
+        if (dto.getBio() != null) currentUser.setBio(dto.getBio());
+        if (dto.getAvatarUrl() != null) currentUser.setAvatarUrl(dto.getAvatarUrl());
+
+
+        User savedUser = userRepository.save(currentUser);
+
+        return ResponseEntity.ok(savedUser);
     }
 
 }
