@@ -39,6 +39,16 @@ public class SpotService {
         this.tagRepository = tagRepository;
         this.spotTagRepository = spotTagRepository;
     }
+    
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    public List<Spot> getAllSpots() {
+        List<Spot> spots = (List<Spot>) spotRepository.findAll();
+        spots.forEach(spot -> {
+            if (spot.getAuthor() != null) spot.getAuthor().getEmail();
+            if (spot.getAddress() != null) spot.getAddress().getName();
+        });
+        return spots;
+    }
 
     @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public List<Spot> searchByTitle(String title) {

@@ -41,7 +41,7 @@ public class Spot {
     @JoinColumn(name = "author_id", nullable = false)
     private User author;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "address_id", nullable = false, unique = true)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "address_id", nullable = false)
     private Address address;
 }

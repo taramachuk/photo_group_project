@@ -58,6 +58,20 @@ public class PhotoService {
     }
 
     @Transactional(readOnly = true)
+    public List<Photo> getPhotosByAuthor(User author) {
+
+        List<Photo> photos = photoRepository.findByAuthorOrderByCreatedAtDesc(author);
+
+        photos.forEach(photo -> {
+            if (photo.getSpot() != null) {
+                photo.getSpot().getId();
+            }
+        });
+
+        return photos;
+    }
+
+    @Transactional(readOnly = true)
     public List<Photo> getPhotosBySpotId(Long spotId) {
         List<Photo> photos = photoRepository.findBySpotIdOrderByCreatedAtDesc(spotId);
         

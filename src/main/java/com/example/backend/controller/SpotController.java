@@ -28,6 +28,12 @@ public class SpotController {
         this.spotMapper = spotMapper;
     }
 
+    @GetMapping
+    public ResponseEntity<List<SpotDto>> getAllSpots() {
+        List<Spot> spots = spotService.getAllSpots();
+        return ResponseEntity.ok(spotMapper.toDtoList(spots));
+    }
+
     @GetMapping("/search/title")
     public ResponseEntity<List<SpotDto>> searchByTitle(@RequestParam String title) {
         List<Spot> spots = spotService.searchByTitle(title);
