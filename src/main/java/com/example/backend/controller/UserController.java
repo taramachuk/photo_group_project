@@ -93,7 +93,9 @@ public class UserController {
             dto.setUrl(photo.getUrl());
             dto.setThumbnailUrl(photo.getThumbnailUrl());
 
-
+            if (photo.getSpot() != null) {
+                dto.setSpotId(photo.getSpot().getId());
+            }
 
             dtos.add(dto);
         }
