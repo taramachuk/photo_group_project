@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import com.example.backend.model.User;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -13,7 +14,7 @@ import java.util.List;
 public interface SpotRepository extends CrudRepository<Spot, Long> {
     // Wyszukiwanie po tytule
     List<Spot> findByTitleContainingIgnoreCase(String title);
-
+    List<Spot> findByAuthor(User author);
     // Wyszukiwanie spotów na aktualnie oglądanym fragmencie mapy
     List<Spot> findByLatitudeBetweenAndLongitudeBetween(
             BigDecimal minLatitude, 

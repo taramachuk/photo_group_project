@@ -21,5 +21,6 @@ public class PhotoDto {
     private AuthorDto author;
     private Long spotId;
     private List<CommentDto> comments;
+    private Integer likes;
 }
 
