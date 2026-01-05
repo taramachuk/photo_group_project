@@ -8,6 +8,7 @@ import com.example.backend.model.Spot;
 import com.example.backend.model.SpotTag;
 import com.example.backend.model.User;
 import com.example.backend.repository.CommentRepository;
+import com.example.backend.repository.SpotLikeRepository;
 import com.example.backend.repository.SpotTagRepository;
 import org.springframework.stereotype.Component;
 
@@ -20,11 +21,13 @@ public class SpotMapper {
     private final SpotTagRepository spotTagRepository;
     private final CommentRepository commentRepository;
     private final CommentMapper commentMapper;
+    private final SpotLikeRepository spotLikeRepository;
 
-    public SpotMapper(SpotTagRepository spotTagRepository, CommentRepository commentRepository, CommentMapper commentMapper) {
+    public SpotMapper(SpotTagRepository spotTagRepository, CommentRepository commentRepository, CommentMapper commentMapper, SpotLikeRepository spotLikeRepository) {
         this.spotTagRepository = spotTagRepository;
         this.commentRepository = commentRepository;
         this.commentMapper = commentMapper;
+        this.spotLikeRepository = spotLikeRepository;
     }
 
     public SpotDto toDto(Spot spot) {
@@ -46,6 +49,12 @@ public class SpotMapper {
             comments = commentMapper.toDtoList(spotComments);
         }
 
+        Integer likes = null;
+        if (spot.getId() != null) {
+            Long likeCount = spotLikeRepository.countBySpotId(spot.getId());
+            likes = likeCount != null ? likeCount.intValue() : 0;
+        }
+
         return SpotDto.builder()
                 .id(spot.getId())
                 .title(spot.getTitle())
@@ -58,6 +67,7 @@ public class SpotMapper {
                 .address(toAddressDto(spot.getAddress()))
                 .tagNames(tagNames)
                 .comments(comments)
+                .likes(likes)
                 .build();
     }
 

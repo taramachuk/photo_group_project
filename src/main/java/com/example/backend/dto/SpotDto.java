@@ -25,5 +25,6 @@ public class SpotDto {
     private AddressDto address;
     private List<String> tagNames;
     private List<CommentDto> comments;
+    private Integer likes;
 }
 

@@ -5,6 +5,7 @@ import com.example.backend.dto.PhotoDto;
 import com.example.backend.model.Photo;
 import com.example.backend.model.User;
 import com.example.backend.repository.CommentRepository;
+import com.example.backend.repository.PhotoLikeRepository;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -15,10 +16,12 @@ public class PhotoMapper {
 
     private final CommentRepository commentRepository;
     private final CommentMapper commentMapper;
+    private final PhotoLikeRepository photoLikeRepository;
 
-    public PhotoMapper(CommentRepository commentRepository, CommentMapper commentMapper) {
+    public PhotoMapper(CommentRepository commentRepository, CommentMapper commentMapper, PhotoLikeRepository photoLikeRepository) {
         this.commentRepository = commentRepository;
         this.commentMapper = commentMapper;
+        this.photoLikeRepository = photoLikeRepository;
     }
 
     public PhotoDto toDto(Photo photo) {
@@ -32,6 +35,12 @@ public class PhotoMapper {
             comments = commentMapper.toDtoList(photoComments);
         }
 
+        Integer likes = null;
+        if (photo.getId() != null) {
+            Long likeCount = photoLikeRepository.countByPhotoId(photo.getId());
+            likes = likeCount != null ? likeCount.intValue() : 0;
+        }
+
         return PhotoDto.builder()
                 .id(photo.getId())
                 .url(photo.getUrl())
@@ -41,6 +50,7 @@ public class PhotoMapper {
                 .author(toAuthorDto(photo.getAuthor()))
                 .spotId(photo.getSpot() != null ? photo.getSpot().getId() : null)
                 .comments(comments)
+                .likes(likes)
                 .build();
     }
 
