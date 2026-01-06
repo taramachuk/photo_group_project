@@ -1,5 +1,6 @@
 package com.example.backend.controller;
 
+import com.example.backend.dto.LikeResponseDto;
 import com.example.backend.model.User;
 import com.example.backend.service.LikeService;
 import org.springframework.http.HttpStatus;
@@ -20,7 +21,7 @@ public class LikeController {
     // --- Spot Likes ---
 
     @PostMapping("/spots/{spotId}")
-    public ResponseEntity<?> likeSpot(@PathVariable Long spotId) {
+    public ResponseEntity<LikeResponseDto> likeSpot(@PathVariable Long spotId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
 
@@ -29,27 +30,41 @@ public class LikeController {
 
             likeService.likeSpot(spotId, currentUser);
 
+            Long likeCount = likeService.getSpotLikeCount(spotId);
+            LikeResponseDto response = LikeResponseDto.builder()
+                    .liked(true)
+                    .likeCount(likeCount)
+                    .spotId(spotId)
+                    .build();
+
             if (alreadyLiked) {
-                return ResponseEntity.ok().build();
+                return ResponseEntity.ok(response);
             } else {
-                return ResponseEntity.status(HttpStatus.CREATED).build();
+                return ResponseEntity.status(HttpStatus.CREATED).body(response);
             }
         } catch (RuntimeException e) {
             if (e.getMessage().equals("Spot not found")) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
             }
             throw e;
         }
     }
 
     @DeleteMapping("/spots/{spotId}")
-    public ResponseEntity<Void> unlikeSpot(@PathVariable Long spotId) {
+    public ResponseEntity<LikeResponseDto> unlikeSpot(@PathVariable Long spotId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
 
         try {
             likeService.unlikeSpot(spotId, currentUser);
-            return ResponseEntity.noContent().build();
+            Long likeCount = likeService.getSpotLikeCount(spotId);
+            LikeResponseDto response = LikeResponseDto.builder()
+                    .liked(false)
+                    .likeCount(likeCount)
+                    .spotId(spotId)
+                    .build();
+            return ResponseEntity.ok(response);
+
         } catch (RuntimeException e) {
             if (e.getMessage().equals("Spot is not liked")) {
                 return ResponseEntity.notFound().build();
@@ -76,7 +91,7 @@ public class LikeController {
     // --- Photo Likes ---
 
     @PostMapping("/photos/{photoId}")
-    public ResponseEntity<?> likePhoto(@PathVariable Long photoId) {
+    public ResponseEntity<LikeResponseDto> likePhoto(@PathVariable Long photoId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
 
@@ -85,27 +100,42 @@ public class LikeController {
 
             likeService.likePhoto(photoId, currentUser);
 
+            Long likeCount = likeService.getPhotoLikeCount(photoId);
+            LikeResponseDto response = LikeResponseDto.builder()
+                    .liked(true)
+                    .likeCount(likeCount)
+                    .photoId(photoId)
+                    .build();
+
+
             if (alreadyLiked) {
-                return ResponseEntity.ok().build();
+                return ResponseEntity.ok(response);
             } else {
-                return ResponseEntity.status(HttpStatus.CREATED).build();
+                return ResponseEntity.status(HttpStatus.CREATED).body(response);
             }
         } catch (RuntimeException e) {
             if (e.getMessage().equals("Photo not found")) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
             }
             throw e;
         }
     }
 
     @DeleteMapping("/photos/{photoId}")
-    public ResponseEntity<Void> unlikePhoto(@PathVariable Long photoId) {
+    public ResponseEntity<LikeResponseDto> unlikePhoto(@PathVariable Long photoId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
 
         try {
             likeService.unlikePhoto(photoId, currentUser);
-            return ResponseEntity.noContent().build();
+            Long likeCount = likeService.getPhotoLikeCount(photoId);
+            LikeResponseDto response = LikeResponseDto.builder()
+                    .liked(false)
+                    .likeCount(likeCount)
+                    .photoId(photoId)
+                    .build();
+            return ResponseEntity.ok(response);
+
         } catch (RuntimeException e) {
             if (e.getMessage().equals("Photo is not liked")) {
                 return ResponseEntity.notFound().build();
