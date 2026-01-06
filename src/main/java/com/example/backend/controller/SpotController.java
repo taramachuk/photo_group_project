@@ -146,5 +146,14 @@ public class SpotController {
         Spot createdSpot = spotService.createSpot(dto, currentUser);
         return ResponseEntity.status(HttpStatus.CREATED).body(spotMapper.toDto(createdSpot));
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteSpot(@PathVariable Long id) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) authentication.getPrincipal();
+
+        spotService.deleteSpot(id, currentUser);
+        return ResponseEntity.noContent().build();
+    }
 }
 
