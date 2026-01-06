@@ -20,6 +20,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Objects;
 
 @Service
 public class SpotService {
@@ -314,6 +315,18 @@ public class SpotService {
         newTag.setName(tagName);
 
         return tagRepository.save(newTag);
+    }
+
+    @Transactional
+    public void deleteSpot(Long id, User currentUser) {
+        Spot spot = spotRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Spot not found"));
+
+        if (spot.getAuthor() == null || !Objects.equals(spot.getAuthor().getId(), currentUser.getId())) {
+            throw new UnauthorizedException("You can only delete your own spots");
+        }
+
+        spotRepository.delete(spot);
     }
 }
 
