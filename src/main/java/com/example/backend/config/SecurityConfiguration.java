@@ -48,6 +48,8 @@ public class SecurityConfiguration {
                         .requestMatchers(HttpMethod.POST, "/spots/**").authenticated()
                         .requestMatchers("/for-later/**").authenticated()
                         .requestMatchers(HttpMethod.GET,"/photos/get/**").permitAll()
+                        .requestMatchers(HttpMethod.GET,"/likes/spots/**").permitAll()
+
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
