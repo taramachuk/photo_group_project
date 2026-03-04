@@ -23,7 +23,6 @@
 | Frontend                  | React                                        |
 | Backend                   | Java                                         |
 | Database/Backend Services | Supabase (Authentication, Storage, Realtime) |
-| Styling                   | CSS / Tailwind (if applicable)               |
 
 ---
 
